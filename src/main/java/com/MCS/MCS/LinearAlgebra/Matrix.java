@@ -28,16 +28,13 @@ public class Matrix {
      * <pre>
      * result[i] = Σ(matrix[i][j] × vector[j]) for j = 0 to size-1
      * </pre>
-     * </p>
      * <p>
      * This implementation uses double-precision arithmetic for the accumulation of
      * products to minimize floating-point rounding errors, then casts the final
      * result back to float precision.
-     * </p>
      * <p>
      * <b>Time complexity:</b> O(n²) where n is the size parameter.<br>
      * <b>Space complexity:</b> O(n) for the result vector.
-     * </p>
      *
      * @param matrix A square matrix of size × size elements. Each element matrix[i][j]
      *               represents the coefficient at row i and column j.
@@ -75,15 +72,12 @@ public class Matrix {
      * <pre>
      * result[i] = vector1[i] - vector2[i]
      * </pre>
-     * </p>
      * <p>
      * This operation is commonly used in computing residuals when verifying solutions
      * to linear systems (e.g., computing b - Ax).
-     * </p>
      * <p>
      * <b>Time complexity:</b> O(n) where n is the size parameter.<br>
      * <b>Space complexity:</b> O(n) for the result vector.
-     * </p>
      *
      * @param vector1 The minuend vector of length size (the vector from which to subtract).
      * @param vector2 The subtrahend vector of length size (the vector to subtract).

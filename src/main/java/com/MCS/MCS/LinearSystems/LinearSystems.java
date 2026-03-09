@@ -176,17 +176,14 @@ public class LinearSystems {
      * Given a lower triangular matrix L and a right-hand side vector b, this method
      * computes the solution vector x such that Lx = b. The algorithm proceeds from
      * the first equation to the last, substituting previously computed values.
-     * </p>
      * <p>
      * The algorithm works as follows: for each row i (from 0 to size-1):
      * <pre>
      * x[i] = (b[i] - sum(L[i][j] * x[j] for j = 0 to i-1)) / L[i][i]
      * </pre>
-     * </p>
      * <p>
      * Time complexity: O(n²) where n is the size of the system.<br>
      * Space complexity: O(n) for the solution vector.
-     * </p>
      *
      * @param matrix       The lower triangular coefficient matrix L (size × size)
      * @param rightHandSide The right-hand side vector b (length = size)
@@ -222,17 +219,14 @@ public class LinearSystems {
      * Given an upper triangular matrix U and a right-hand side vector b, this method
      * computes the solution vector x such that Ux = b. The algorithm proceeds from
      * the last equation to the first, substituting previously computed values.
-     * </p>
      * <p>
      * The algorithm works as follows: for each row i (from size-1 to 0):
      * <pre>
      * x[i] = (b[i] - sum(U[i][j] * x[j] for j = i+1 to size-1)) / U[i][i]
      * </pre>
-     * </p>
      * <p>
      * Time complexity: O(n²) where n is the size of the system.<br>
      * Space complexity: O(n) for the solution vector.
-     * </p>
      *
      * @param matrix       The upper triangular coefficient matrix U (size × size)
      * @param rightHandSide The right-hand side vector b (length = size)
@@ -271,7 +265,6 @@ public class LinearSystems {
      * relative_residual = max_i(|Ax - b|_i) / max_i(sum_j(|A[i][j]| * |x[j]|) + |b[i]|)
      * </pre>
      * and returns true if it is less than or equal to 1e-5.
-     * </p>
      * <p>
      * This validation method is numerically stable as it uses:
      * <ul>
@@ -279,11 +272,9 @@ public class LinearSystems {
      *   <li>Relative error scaling to handle systems of varying magnitudes</li>
      *   <li>Row-wise error bounds to account for accumulated floating-point errors</li>
      * </ul>
-     * </p>
      * <p>
      * Time complexity: O(n²) where n is the size of the system.<br>
      * Space complexity: O(1) (constant space).
-     * </p>
      *
      * @param matrix       The coefficient matrix A (size × size)
      * @param solution     The solution vector x to verify (length = size)
