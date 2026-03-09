@@ -27,10 +27,20 @@ jobs:
       - name: Generate Javadoc
         run: mvn -B javadoc:javadoc
 
+      - name: Verify Javadoc generation
+        run: |
+          if [ ! -d "target/reports/apidocs" ]; then
+            echo "Error: Javadoc directory not found!"
+            ls -la target/
+            exit 1
+          fi
+          echo "Javadoc generated successfully"
+          ls -la target/reports/apidocs/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: target/site/apidocs
+          path: target/reports/apidocs
 
   deploy:
     environment:
