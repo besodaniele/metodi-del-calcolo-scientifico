@@ -1,5 +1,7 @@
 package com.MCS.MCS.LinearAlgebra;
 
+import java.util.List;
+
 /**
  * Utility class providing basic linear algebra operations on matrices and vectors.
  * <p>
@@ -19,6 +21,8 @@ package com.MCS.MCS.LinearAlgebra;
  * @since 1.0
  */
 public class Matrix {
+
+    private static final float PIVOT_TOLERANCE = 1e-8f;
 
     /**
      * Performs matrix-vector multiplication: result = matrix × vector.
@@ -64,6 +68,20 @@ public class Matrix {
         return result;
     }
 
+    public static float [][] matrixMultiplication(float [][] matrix1, float [][] matrix2, int size) {
+        float [][] result = new float[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                double sum = 0.0;
+                for (int k = 0; k < size; k++) {
+                    sum += matrix1[i][k] * matrix2[k][j];
+                }
+                result[i][j] = (float) sum;
+            }
+        }
+        return result;
+    }
+
     /**
      * Performs element-wise subtraction of two vectors: result = vector1 - vector2.
      * <p>
@@ -92,10 +110,91 @@ public class Matrix {
      * @see #matrixVectorMultiplication(float[][], float[], int)
      */
     public static  float [] vectorSubtraction(float [] vector1, float [] vector2, int size) {
-        float [] result = new float[size];
+        float[] result = new float[size];
         for (int i = 0; i < size; i++) {
             result[i] = vector1[i] - vector2[i];
         }
         return result;
+    }
+    public static float[][] inverseOnlyOneColumn(float [][] matrix, int size, int column) {
+        float [][] inverse = new float[size][size];
+        for (int i=0; i < size; i++) {
+            inverse[i][i] = 1;
+        }
+        for (int i = column+1; i < size; i++) {
+            inverse[i][column] = -matrix[i][column];
+        }
+        return inverse;
+    }
+
+
+    /**
+     * Computes the LU factorization of a square matrix without pivoting.
+     * <p>
+     * The returned matrices satisfy {@code A = L * U}, where {@code L} is unit lower
+     * triangular and {@code U} is upper triangular. Since this implementation does not
+     * perform pivoting, it requires every pivot on the diagonal to be non-zero during
+     * elimination.
+     * </p>
+     *
+     * @param matrix the square matrix to factorize
+     * @param size   the dimension of the matrix
+     * @return a list containing {@code L} at index 0 and {@code U} at index 1
+     * @throws IllegalArgumentException if the matrix is null, not square, size is not
+     *                                  positive, or a zero/near-zero pivot is encountered
+     */
+    public static List<float[][]> factorizeLU(float[][] matrix, int size) {
+        float[][] L = new float[size][size];
+        float[][] U = copyMatrix(matrix, size);
+
+        for (int i = 0; i < size; i++) {
+            L[i][i] = 1.0f;
+        }
+
+        for (int j = 0; j < size - 1; j++) {
+            if (Math.abs(U[j][j]) < PIVOT_TOLERANCE) {
+                throw new IllegalArgumentException("Zero or near-zero pivot encountered at [" + j + "][" + j + "]: " + U[j][j]);
+            }
+
+            for (int i = j + 1; i < size; i++) {
+                float multiplier = U[i][j] / U[j][j];
+                L[i][j] = multiplier;
+
+                for (int k = j; k < size; k++) {
+                    U[i][k] -= multiplier * U[j][k];
+                }
+                U[i][j] = 0.0f;
+            }
+        }
+
+        if (Math.abs(U[size - 1][size - 1]) < PIVOT_TOLERANCE) {
+            throw new IllegalArgumentException("Zero or near-zero pivot encountered at [" + (size - 1) + "][" + (size - 1) + "]: " + U[size - 1][size - 1]);
+        }
+
+        return List.of(L, U);
+    }
+
+    private static float[][] copyMatrix(float[][] matrix, int size) {
+        if (matrix == null) {
+            throw new IllegalArgumentException("Matrix cannot be null");
+        }
+        if (size <= 0) {
+            throw new IllegalArgumentException("Size must be positive, got: " + size);
+        }
+        if (matrix.length != size) {
+            throw new IllegalArgumentException("Matrix row count (" + matrix.length + ") does not match size (" + size + ")");
+        }
+
+        float[][] copy = new float[size][size];
+        for (int i = 0; i < size; i++) {
+            if (matrix[i] == null) {
+                throw new IllegalArgumentException("Matrix row " + i + " is null");
+            }
+            if (matrix[i].length != size) {
+                throw new IllegalArgumentException("Matrix row " + i + " has length " + matrix[i].length + ", expected " + size);
+            }
+            System.arraycopy(matrix[i], 0, copy[i], 0, size);
+        }
+        return copy;
     }
 }
