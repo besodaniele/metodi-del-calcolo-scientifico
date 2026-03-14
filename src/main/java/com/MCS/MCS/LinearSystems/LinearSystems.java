@@ -332,12 +332,12 @@ public class LinearSystems {
      * Questo metodo utilizza la fattorizzazione LU per decomporre la matrice A in due matrici
      * triangolari L (triangolare inferiore) e U (triangolare superiore). Successivamente,
      * risolve i due sistemi lineari risultanti:
+     * </p>
      * <pre>
      * Ly = b
      * Ux = y
      * </pre>
      * per ottenere la soluzione finale x.
-     * </p>
      * <p>
      * Complessità temporale: O(n³) per la fattorizzazione LU e O(n²) per la risoluzione dei sistemi.<br>
      * Complessità spaziale: O(n²) per le matrici L e U.
