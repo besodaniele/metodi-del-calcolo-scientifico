@@ -688,4 +688,36 @@ public class LinearSystemTest {
 
         assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
     }
+    /**
+     * Tests the resolution of a generic 3x3 linear system using LU factorization.
+     * <p>
+     * This test verifies the correctness of the LU factorization-based solver
+     * for a generic 3x3 system. The solution is validated using the
+     * `checkResolution` method to ensure it satisfies the original system.
+     * </p>
+     * <p>
+     * System of equations:<br>
+     * 4x₁ + 4x₂ + 2x₃ = 20<br>
+     * 2x₁ + 3x₂ + 3x₃ = 18<br>
+     * 1x₁ + 2x₂ + 5x₃ = 25
+     * </p>
+     * <p>
+     * Expected behavior: The solution vector satisfies the system within the
+     * defined tolerance.
+     * </p>
+     */
+    @Test
+    @DisplayName("Test resolution with generic 3x3 lower triangular system using LU factorization")
+    public void testResolutionWithLUFactorization() {
+        float[][] matrix = {
+                {4, 4, 2},
+                {2, 3, 3},
+                {1, 2, 5}
+        };
+        float[] rhs = {20, 18, 25};
+        int size = 3;
+        var solution = LinearSystems.resolveGenericLU(matrix, rhs, size);
+        assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
+
+    }
 }
