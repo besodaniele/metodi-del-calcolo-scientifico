@@ -327,28 +327,28 @@ public class LinearSystems {
         return relativeResidual <= 1e-5;
     }
     /**
-     * Risolve un sistema lineare generico Ax = b utilizzando la fattorizzazione LU.
+     * Resolves a generic linear system Ax = b using LU factorization.
      * <p>
-     * Questo metodo utilizza la fattorizzazione LU per decomporre la matrice A in due matrici
-     * triangolari L (triangolare inferiore) e U (triangolare superiore). Successivamente,
-     * risolve i due sistemi lineari risultanti:
-     * </p>
+     * This method uses LU factorization to decompose matrix A into two triangular
+     * matrices L (lower triangular) and U (upper triangular). It then solves
+     * the two resulting linear systems:
      * <pre>
      * Ly = b
      * Ux = y
      * </pre>
-     * per ottenere la soluzione finale x.
+     * to obtain the final solution x.
      * <p>
-     * Complessità temporale: O(n³) per la fattorizzazione LU e O(n²) per la risoluzione dei sistemi.<br>
-     * Complessità spaziale: O(n²) per le matrici L e U.
+     * Time complexity: O(n³) for LU factorization and O(n²) for solving the systems.<br>
+     * Space complexity: O(n²) for the L and U matrices.
      * </p>
      *
-     * @param matrix        La matrice dei coefficienti A (dimensione size × size)
-     * @param rightHandSide Il vettore dei termini noti b (lunghezza = size)
-     * @param size          La dimensione del sistema lineare
-     * @return Il vettore soluzione x (lunghezza = size)
-     * @throws IllegalArgumentException se la matrice è nulla, non valida o contiene valori non finiti
+     * @param matrix        The coefficient matrix A (size × size)
+     * @param rightHandSide The right-hand side vector b (length = size)
+     * @param size          The dimension of the linear system
+     * @return The solution vector x (length = size)
+     * @throws IllegalArgumentException if the matrix is null, invalid, or contains non-finite values
      */
+
     public static float[] resolveGenericLU(float [][] matrix, float [] rightHandSide, int size){
         validateVector(rightHandSide, size, "Right-hand side");
         validateFiniteMatrixValues(matrix, size);
@@ -360,6 +360,38 @@ public class LinearSystems {
         var U = list.getLast();
 
         var y = resolveLowerTriangular(L,rightHandSide,size);
+
+        return resolveUpperTriangular(U,y,size);
+
+    }
+    public static float[] resolveGenericPLU(float [][] matrix, float [] rightHandSide, int size){
+        validateVector(rightHandSide, size, "Right-hand side");
+        validateFiniteMatrixValues(matrix, size);
+        validateFiniteValues(rightHandSide, "Right-hand side");
+
+        int max = 0;
+        int maxIndex = 0;
+        for (int i = 0; i < size; i++) {
+            if (Math.abs(matrix[i][1]) > max) {
+                max = (int) Math.abs(matrix[i][1]);
+                maxIndex = i;
+            }
+        }
+        // Swap the first row with the row containing the maximum element in the first column
+        float[] tempRow = matrix[0];
+        matrix[0] = matrix[maxIndex];
+        matrix[maxIndex] = tempRow;
+        // Swap the corresponding elements in the right-hand side vector
+        float tempValue = rightHandSide[0];
+        rightHandSide[0] = rightHandSide[maxIndex];
+        rightHandSide[maxIndex] = tempValue;
+
+        var list = Matrix.factorizeLU(matrix,size);
+        var L = list.getFirst();
+        var U = list.getLast();
+
+
+        var y = resolveLowerTriangular(L, rightHandSide, size);
 
         return resolveUpperTriangular(U,y,size);
 

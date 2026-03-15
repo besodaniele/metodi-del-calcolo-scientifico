@@ -720,4 +720,30 @@ public class LinearSystemTest {
         assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
 
     }
+    @Test
+    @DisplayName("Test resolution with generic 3x3 system using PLU factorization")
+    public void testResolutionWithPLUFactorization() {
+        float[][] matrix = {
+                {2, 3, 3},
+                {4, 4, 2},
+                {1, 2, 5}
+        };
+        float[] rhs = {18, 20, 25};
+        int size = 3;
+        var solution = LinearSystems.resolveGenericPLU(matrix, rhs, size);
+        assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
+    }
+    @Test
+    @DisplayName("Test resolution with generic 3x3 system using PLU factorization with 0 element on the diagonal")
+    public void testResolutionWithPLUFactorizationZeroDiagonal() {
+        float[][] matrix = {
+                {0, 3, 3},
+                {4, 4, 2},
+                {1, 2, 5}
+        };
+        float[] rhs = {18, 20, 25};
+        int size = 3;
+        var solution = LinearSystems.resolveGenericPLU(matrix, rhs, size);
+        assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
+    }
 }
