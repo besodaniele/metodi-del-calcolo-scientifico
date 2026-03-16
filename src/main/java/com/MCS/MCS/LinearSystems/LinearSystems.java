@@ -364,6 +364,37 @@ public class LinearSystems {
         return resolveUpperTriangular(U,y,size);
 
     }
+
+    /**
+     * Resolves a generic linear system Ax = b using partial pivoting LU factorization (PLU).
+     * <p>
+     * Before performing LU factorization, this method applies partial pivoting by finding
+     * the row with the largest absolute value in the first column and swapping it with the
+     * first row of both the matrix and the right-hand side vector. This improves numerical
+     * stability compared to LU factorization without pivoting.
+     * </p>
+     * <p>
+     * The method then decomposes the permuted matrix PA into L * U and solves:
+     * <pre>
+     * Ly = Pb   (forward substitution)
+     * Ux = y    (backward substitution)
+     * </pre>
+     * </p>
+     * <p>
+     * <b>Note:</b> This method modifies the input {@code matrix} and {@code rightHandSide}
+     * arrays in place during the row swap.
+     * </p>
+     * <p>
+     * Time complexity: O(n³) for LU factorization and O(n²) for solving the systems.<br>
+     * Space complexity: O(n²) for the L and U matrices.
+     * </p>
+     *
+     * @param matrix        The coefficient matrix A (size × size); modified in place
+     * @param rightHandSide The right-hand side vector b (length = size); modified in place
+     * @param size          The dimension of the linear system
+     * @return The solution vector x (length = size)
+     * @throws IllegalArgumentException if the matrix is null, invalid, or contains non-finite values
+     */
     public static float[] resolveGenericPLU(float [][] matrix, float [] rightHandSide, int size){
         validateVector(rightHandSide, size, "Right-hand side");
         validateFiniteMatrixValues(matrix, size);
@@ -396,4 +427,77 @@ public class LinearSystems {
         return resolveUpperTriangular(U,y,size);
 
     }
+
+
+    /**
+     * Resolves a symmetric positive definite linear system Ax = b using Cholesky factorization.
+     * <p>
+     * For a symmetric positive definite matrix A, this method computes the Cholesky
+     * decomposition A = L * L&#7488; where L is a lower triangular matrix, then solves
+     * the two resulting systems:
+     * <pre>
+     * Ly  = b   (forward substitution)
+     * L&#7488;x = y   (backward substitution)
+     * </pre>
+     * to obtain the final solution x.
+     * </p>
+     * <p>
+     * The diagonal elements of L are computed as:
+     * <pre>
+     * L[k][k] = sqrt(A[k][k] - sum(L[k][i]² for i = 0 to k-1))
+     * </pre>
+     * and the off-diagonal elements as:
+     * <pre>
+     * L[j][k] = (A[j][k] - sum(L[k][i] * L[j][i] for i = 0 to k-1)) / L[k][k]
+     * </pre>
+     * </p>
+     * <p>
+     * Time complexity: O(n³) for Cholesky factorization and O(n²) for solving the systems.<br>
+     * Space complexity: O(n²) for the L matrix.
+     * </p>
+     *
+     * @param matrix        The symmetric positive definite coefficient matrix A (size × size)
+     * @param rightHandSide The right-hand side vector b (length = size)
+     * @param size          The dimension of the linear system
+     * @return The solution vector x (length = size)
+     * @throws IllegalArgumentException if the matrix is not symmetric, is null, invalid,
+     *                                  or is not positive definite (zero pivot encountered)
+     */
+    public static float[] resolveCholesky(float [][] matrix, float [] rightHandSide, int size) {
+        try {
+            var newMatrix = Matrix.isSymmetric(matrix, size);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Matrix is not symmetric, cannot apply Cholesky factorization");
+        }
+        var L = new float[size][size];
+        float sum = 0;
+        for( int k = 0; k < size; k++){
+            //columns
+
+            for (int j = k; j < size; j++){
+                sum = 0;
+
+                //rows
+                if (j==k){
+                   for ( int i = 0 ; i < k;i++){
+                       sum += (float) Math.pow(L[k][i],2);
+                   }
+                   L[k][k] = (float) Math.sqrt(matrix[k][k]-sum);
+                }else{
+                   for(int i=0;i<j;i++){
+                       sum += L[k][i]*L[j][i];
+                   }
+                   L[j][k] = (matrix[j][k] - sum) / L[k][k];
+               }
+            }
+        }
+
+        var U = Matrix.traspose(L,size);
+
+        var y = resolveLowerTriangular(L, rightHandSide, size);
+
+        return resolveUpperTriangular(U,y,size);
+
+    }
+
 }

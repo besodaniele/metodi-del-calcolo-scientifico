@@ -688,12 +688,13 @@ public class LinearSystemTest {
 
         assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
     }
+
     /**
      * Tests the resolution of a generic 3x3 linear system using LU factorization.
      * <p>
      * This test verifies the correctness of the LU factorization-based solver
      * for a generic 3x3 system. The solution is validated using the
-     * `checkResolution` method to ensure it satisfies the original system.
+     * {@code checkResolution} method to ensure it satisfies the original system.
      * </p>
      * <p>
      * System of equations:<br>
@@ -720,6 +721,19 @@ public class LinearSystemTest {
         assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
 
     }
+
+    /**
+     * Tests the resolution of a generic 3x3 linear system using PLU factorization.
+     * <p>
+     * This test validates that the PLU-based solver correctly handles systems
+     * that require row permutations to improve numerical stability and obtains
+     * a solution that satisfies the original linear system.
+     * </p>
+     * <p>
+     * Expected behavior: The computed solution vector verifies successfully
+     * through {@code checkResolution}.
+     * </p>
+     */
     @Test
     @DisplayName("Test resolution with generic 3x3 system using PLU factorization")
     public void testResolutionWithPLUFactorization() {
@@ -733,6 +747,19 @@ public class LinearSystemTest {
         var solution = LinearSystems.resolveGenericPLU(matrix, rhs, size);
         assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
     }
+
+    /**
+     * Tests PLU factorization when the matrix has a zero element on the diagonal.
+     * <p>
+     * This scenario confirms that pivoting is effectively applied to swap rows
+     * and avoid a zero pivot during factorization, allowing the solver to
+     * continue and compute a valid solution.
+     * </p>
+     * <p>
+     * Expected behavior: The solver returns a solution that satisfies the original
+     * system within the configured tolerance.
+     * </p>
+     */
     @Test
     @DisplayName("Test resolution with generic 3x3 system using PLU factorization with 0 element on the diagonal")
     public void testResolutionWithPLUFactorizationZeroDiagonal() {
@@ -744,6 +771,33 @@ public class LinearSystemTest {
         float[] rhs = {18, 20, 25};
         int size = 3;
         var solution = LinearSystems.resolveGenericPLU(matrix, rhs, size);
+        assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
+    }
+
+    /**
+     * Tests solving a symmetric positive definite 3x3 system using Cholesky decomposition.
+     * <p>
+     * Cholesky resolution applies when the coefficient matrix is symmetric and
+     * positive definite. This test verifies that the computed solution satisfies
+     * the original system.
+     * </p>
+     * <p>
+     * Expected behavior: {@code checkResolution} returns true for the computed solution.
+     * </p>
+     */
+    @Test
+    @DisplayName("Test for Cholesky resolution with a positive 3x3 definite matrix ")
+    public void testCholeskyResolution() {
+        float [][] matrix = {
+                {4, 2, 1},
+                {2, 3, 2},
+                {1, 2, 5}
+        };
+        float[] rhs = {20, 18, 25};
+        int size = 3;
+
+        var solution = LinearSystems.resolveCholesky(matrix, rhs, size);
+
         assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
     }
 }

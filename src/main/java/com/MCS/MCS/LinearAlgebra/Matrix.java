@@ -68,6 +68,22 @@ public class Matrix {
         return result;
     }
 
+    /**
+     * Multiplies two square matrices: result = matrix1 × matrix2.
+     * <p>
+     * For each output cell {@code result[i][j]}, computes the dot product between
+     * row {@code i} of {@code matrix1} and column {@code j} of {@code matrix2}.
+     * Uses double-precision accumulation to reduce rounding errors, then stores
+     * the final value as float.
+     * </p>
+     *
+     * @param matrix1 the left matrix operand (size × size)
+     * @param matrix2 the right matrix operand (size × size)
+     * @param size    the common matrix dimension
+     * @return a new size × size matrix containing the product
+     * @throws ArrayIndexOutOfBoundsException if matrix dimensions do not match {@code size}
+     * @throws NullPointerException if any input matrix or row is null
+     */
     public static float [][] matrixMultiplication(float [][] matrix1, float [][] matrix2, int size) {
         float [][] result = new float[size][size];
         for (int i = 0; i < size; i++) {
@@ -116,6 +132,81 @@ public class Matrix {
         }
         return result;
     }
+
+    /**
+     * Performs element-wise subtraction of two square matrices: result = matrix1 - matrix2.
+     *
+     * @param matrix1 the minuend matrix (size × size)
+     * @param matrix2 the subtrahend matrix (size × size)
+     * @param size    the matrix dimension
+     * @return a new size × size matrix containing element-wise differences
+     * @throws ArrayIndexOutOfBoundsException if matrix dimensions do not match {@code size}
+     * @throws NullPointerException if any input matrix or row is null
+     */
+    public static float [][] matrixSubtraction(float [][] matrix1, float [][] matrix2, int size) {
+        float [][] result = new float[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                result[i][j] = matrix1[i][j] - matrix2[i][j];
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Performs element-wise addition of two square matrices: result = matrix1 + matrix2.
+     *
+     * @param matrix1 the first addend matrix (size × size)
+     * @param matrix2 the second addend matrix (size × size)
+     * @param size    the matrix dimension
+     * @return a new size × size matrix containing element-wise sums
+     * @throws ArrayIndexOutOfBoundsException if matrix dimensions do not match {@code size}
+     * @throws NullPointerException if any input matrix or row is null
+     */
+    public static float [][] matrixAddition(float [][] matrix1, float [][] matrix2, int size) {
+        float [][] result = new float[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                result[i][j] = matrix1[i][j] + matrix2[i][j];
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Multiplies each element of a square matrix by a scalar value.
+     *
+     * @param matrix the input matrix (size × size)
+     * @param scalar the scalar multiplier
+     * @param size   the matrix dimension
+     * @return a new size × size matrix where each element is {@code matrix[i][j] * scalar}
+     * @throws ArrayIndexOutOfBoundsException if matrix dimensions do not match {@code size}
+     * @throws NullPointerException if the matrix or any row is null
+     */
+    public static float [][] scalarMultiplication(float [][] matrix, float scalar, int size) {
+        float [][] result = new float[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                result[i][j] = matrix[i][j] * scalar;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Builds an elementary inverse matrix that stores one elimination column.
+     * <p>
+     * The returned matrix starts as identity, then for rows below {@code column}
+     * sets {@code inverse[i][column] = -matrix[i][column]}.
+     * This is useful in elimination workflows where one column of multipliers
+     * is encoded as an elementary transformation.
+     * </p>
+     *
+     * @param matrix the source matrix containing elimination coefficients
+     * @param size   the matrix dimension
+     * @param column the target pivot column
+     * @return an identity-like matrix with the specified modified column entries
+     */
     public static float[][] inverseOnlyOneColumn(float [][] matrix, int size, int column) {
         float [][] inverse = new float[size][size];
         for (int i=0; i < size; i++) {
@@ -126,7 +217,6 @@ public class Matrix {
         }
         return inverse;
     }
-
 
     /**
      * Computes the LU factorization of a square matrix without pivoting.
@@ -174,6 +264,16 @@ public class Matrix {
         return List.of(L, U);
     }
 
+    /**
+     * Creates a defensive deep copy of a square matrix after validating dimensions.
+     *
+     * @param matrix the matrix to copy
+     * @param size   the expected matrix dimension
+     * @return a new size × size matrix with the same values as the input
+     * @throws IllegalArgumentException if matrix is null, size is non-positive,
+     *                                  row count does not match size, a row is null,
+     *                                  or a row length does not match size
+     */
     private static float[][] copyMatrix(float[][] matrix, int size) {
         if (matrix == null) {
             throw new IllegalArgumentException("Matrix cannot be null");
@@ -196,5 +296,69 @@ public class Matrix {
             System.arraycopy(matrix[i], 0, copy[i], 0, size);
         }
         return copy;
+    }
+
+    /**
+     * Computes the transpose of a square matrix.
+     * <p>
+     * Note: method name is kept as {@code traspose} to match existing API.
+     * </p>
+     *
+     * @param matrix the input matrix (size × size)
+     * @param size   the matrix dimension
+     * @return a new size × size matrix where {@code result[j][i] = matrix[i][j]}
+     */
+    public static float[][] traspose(float [][] matrix, int size) {
+        float [][] result = new float[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                result[j][i] = matrix[i][j];
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Checks if a matrix is symmetric or semi-symmetric within a specified tolerance.
+     * <p>
+     * A matrix is considered symmetric if {@code matrix[i][j] == matrix[j][i]} for all
+     * i, j. It is considered semi-symmetric if the absolute difference
+     * {@code |matrix[i][j] - matrix[j][i]|} is less than or equal to a defined tolerance
+     * for any pair of indices (i, j). If the matrix is symmetric, it is returned as-is.
+     * If it is semi-symmetric, a new symmetric matrix is constructed by averaging the
+     * original matrix with its transpose. If the matrix is neither symmetric nor
+     * semi-symmetric, an exception is thrown.
+     *
+     * @param matrix the square matrix to check for symmetry
+     * @param size   the dimension of the matrix
+     * @return the original matrix if it is symmetric, or a new symmetric matrix if it is semi-symmetric
+     * @throws IllegalArgumentException if the input matrix is null, not square, size is not positive,
+     *                                  or if the matrix is neither symmetric nor semi-symmetric
+     */
+    public static float [][] isSymmetric(float [][] matrix, int size) {
+        boolean isSymmetric = true;
+        boolean semiSymmetric = false;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (matrix[i][j] != matrix[j][i]) {
+                    isSymmetric = false;
+                    semiSymmetric = false;
+                }
+                if (Math.abs(matrix[i][j] - matrix[j][i] )<= PIVOT_TOLERANCE) {
+                    semiSymmetric = true;
+                }
+
+            }
+        }
+        if(isSymmetric){
+            return matrix;
+        }
+        else if (semiSymmetric) {
+            var traspose = traspose(matrix, size);
+            return scalarMultiplication(matrixAddition(matrix, traspose, size),0.5f, size);
+        }
+        else {
+            throw new IllegalArgumentException("Matrix is not symmetric");
+        }
     }
 }
