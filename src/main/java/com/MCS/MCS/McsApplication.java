@@ -18,6 +18,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class McsApplication {
 
 	/**
+	 * Creates the application instance.
+	 */
+	public McsApplication() {
+	}
+
+	/**
 	 * Entry point for the Spring Boot application.
 	 * <p>
 	 * Initializes and starts the Spring application context.

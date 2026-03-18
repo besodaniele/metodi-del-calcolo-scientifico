@@ -775,6 +775,28 @@ public class LinearSystemTest {
     }
 
     /**
+     * Tests PLU factorization when a pivot swap is needed after the first elimination step.
+     * <p>
+     * This matrix has a valid first pivot, but during the second iteration the algorithm
+     * must swap rows to select the largest absolute pivot in column 1.
+     * </p>
+     */
+    @Test
+    @DisplayName("Test PLU applies pivoting at each iteration")
+    public void testResolutionWithPLUFactorizationSecondColumnPivot() {
+        float[][] matrix = {
+                {5, 1, 1},
+                {2, 0, 1},
+                {1, 3, 1}
+        };
+        float[] rhs = {10, 5, 10};
+        int size = 3;
+
+        var solution = LinearSystems.resolveGenericPLU(matrix, rhs, size);
+        assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
+    }
+
+    /**
      * Tests solving a symmetric positive definite 3x3 system using Cholesky decomposition.
      * <p>
      * Cholesky resolution applies when the coefficient matrix is symmetric and

@@ -25,6 +25,13 @@ public class Matrix {
     private static final float PIVOT_TOLERANCE = 1e-8f;
 
     /**
+     * Utility class: non istanziabile.
+     */
+    private Matrix() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+
+    /**
      * Performs matrix-vector multiplication: result = matrix × vector.
      * <p>
      * Computes the product of a square matrix and a vector. The resulting vector
@@ -262,6 +269,95 @@ public class Matrix {
         }
 
         return List.of(L, U);
+    }
+
+    /**
+     * Computes the PLU factorization of a square matrix with partial pivoting.
+     * <p>
+     * The returned matrices satisfy {@code P * A = L * U}, where {@code P} is a
+     * permutation matrix, {@code L} is unit lower triangular, and {@code U} is
+     * upper triangular.
+     * </p>
+     *
+     * @param matrix the square matrix to factorize
+     * @param size   the dimension of the matrix
+     * @return a list containing {@code P} at index 0, {@code L} at index 1, and {@code U} at index 2
+     * @throws IllegalArgumentException if the matrix is null, not square, size is not
+     *                                  positive, or a zero/near-zero pivot is encountered
+     */
+    public static List<float[][]> factorizePLU(float[][] matrix, int size) {
+        float[][] P = createIdentityMatrix(size);
+        float[][] L = createIdentityMatrix(size);
+        float[][] U = copyMatrix(matrix, size);
+
+        for (int j = 0; j < size - 1; j++) {
+            int pivotRow = findPivotRow(U, j, size);
+
+            swapRows(U, j, pivotRow);
+            swapRows(P, j, pivotRow);
+            swapLRowsUntilColumn(L, j, pivotRow, j);
+
+            if (Math.abs(U[j][j]) < PIVOT_TOLERANCE) {
+                throw new IllegalArgumentException("Zero or near-zero pivot encountered at [" + j + "][" + j + "]: " + U[j][j]);
+            }
+
+            for (int i = j + 1; i < size; i++) {
+                float multiplier = U[i][j] / U[j][j];
+                L[i][j] = multiplier;
+
+                for (int k = j; k < size; k++) {
+                    U[i][k] -= multiplier * U[j][k];
+                }
+                U[i][j] = 0.0f;
+            }
+        }
+
+        if (Math.abs(U[size - 1][size - 1]) < PIVOT_TOLERANCE) {
+            throw new IllegalArgumentException("Zero or near-zero pivot encountered at [" + (size - 1) + "][" + (size - 1) + "]: " + U[size - 1][size - 1]);
+        }
+
+        return List.of(P, L, U);
+    }
+
+    private static float[][] createIdentityMatrix(int size) {
+        float[][] identity = new float[size][size];
+        for (int i = 0; i < size; i++) {
+            identity[i][i] = 1.0f;
+        }
+        return identity;
+    }
+
+    private static int findPivotRow(float[][] matrix, int column, int size) {
+        int pivotRow = column;
+        float max = Math.abs(matrix[column][column]);
+        for (int i = column + 1; i < size; i++) {
+            float candidate = Math.abs(matrix[i][column]);
+            if (candidate > max) {
+                max = candidate;
+                pivotRow = i;
+            }
+        }
+        return pivotRow;
+    }
+
+    private static void swapRows(float[][] matrix, int rowA, int rowB) {
+        if (rowA == rowB) {
+            return;
+        }
+        float[] temp = matrix[rowA];
+        matrix[rowA] = matrix[rowB];
+        matrix[rowB] = temp;
+    }
+
+    private static void swapLRowsUntilColumn(float[][] matrixL, int rowA, int rowB, int columnExclusive) {
+        if (rowA == rowB) {
+            return;
+        }
+        for (int j = 0; j < columnExclusive; j++) {
+            float temp = matrixL[rowA][j];
+            matrixL[rowA][j] = matrixL[rowB][j];
+            matrixL[rowB][j] = temp;
+        }
     }
 
     /**

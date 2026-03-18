@@ -178,6 +178,7 @@ public class LinearSystems {
      * Given a lower triangular matrix L and a right-hand side vector b, this method
      * computes the solution vector x such that Lx = b. The algorithm proceeds from
      * the first equation to the last, substituting previously computed values.
+     * </p>
      * <p>
      * The algorithm works as follows: for each row i (from 0 to size-1):
      * <pre>
@@ -186,6 +187,7 @@ public class LinearSystems {
      * <p>
      * Time complexity: O(n²) where n is the size of the system.<br>
      * Space complexity: O(n) for the solution vector.
+     * </p>
      *
      * @param matrix       The lower triangular coefficient matrix L (size × size)
      * @param rightHandSide The right-hand side vector b (length = size)
@@ -221,6 +223,7 @@ public class LinearSystems {
      * Given an upper triangular matrix U and a right-hand side vector b, this method
      * computes the solution vector x such that Ux = b. The algorithm proceeds from
      * the last equation to the first, substituting previously computed values.
+     * </p>
      * <p>
      * The algorithm works as follows: for each row i (from size-1 to 0):
      * <pre>
@@ -229,6 +232,7 @@ public class LinearSystems {
      * <p>
      * Time complexity: O(n²) where n is the size of the system.<br>
      * Space complexity: O(n) for the solution vector.
+     * </p>
      *
      * @param matrix       The upper triangular coefficient matrix U (size × size)
      * @param rightHandSide The right-hand side vector b (length = size)
@@ -277,6 +281,7 @@ public class LinearSystems {
      * <p>
      * Time complexity: O(n²) where n is the size of the system.<br>
      * Space complexity: O(1) (constant space).
+     * </p>
      *
      * @param matrix       The coefficient matrix A (size × size)
      * @param solution     The solution vector x to verify (length = size)
@@ -350,81 +355,60 @@ public class LinearSystems {
      */
 
     public static float[] resolveGenericLU(float [][] matrix, float [] rightHandSide, int size){
+        validateMatrix(matrix, size);
         validateVector(rightHandSide, size, "Right-hand side");
         validateFiniteMatrixValues(matrix, size);
         validateFiniteValues(rightHandSide, "Right-hand side");
         validateNonZeroDiagonal(matrix, size);
 
-        var list = Matrix.factorizeLU(matrix,size);
-        var L = list.getFirst();
-        var U = list.getLast();
+        var factors = Matrix.factorizeLU(matrix, size);
+        var L = factors.getFirst();
+        var U = factors.getLast();
 
-        var y = resolveLowerTriangular(L,rightHandSide,size);
+        var y = resolveLowerTriangular(L, rightHandSide, size);
 
-        return resolveUpperTriangular(U,y,size);
+        return resolveUpperTriangular(U, y, size);
 
     }
 
     /**
      * Resolves a generic linear system Ax = b using partial pivoting LU factorization (PLU).
      * <p>
-     * Before performing LU factorization, this method applies partial pivoting by finding
-     * the row with the largest absolute value in the first column and swapping it with the
-     * first row of both the matrix and the right-hand side vector. This improves numerical
-     * stability compared to LU factorization without pivoting.
+     * This method uses PLU factorization to decompose matrix A into a permutation
+     * matrix P, a lower triangular matrix L, and an upper triangular matrix U,
+     * then solves:
      * </p>
      * <p>
-     * The method then decomposes the permuted matrix PA into L * U and solves:
+     * with:
      * <pre>
      * Ly = Pb   (forward substitution)
      * Ux = y    (backward substitution)
      * </pre>
-     * </p>
-     * <p>
-     * <b>Note:</b> This method modifies the input {@code matrix} and {@code rightHandSide}
-     * arrays in place during the row swap.
-     * </p>
      * <p>
      * Time complexity: O(n³) for LU factorization and O(n²) for solving the systems.<br>
      * Space complexity: O(n²) for the L and U matrices.
      * </p>
      *
-     * @param matrix        The coefficient matrix A (size × size); modified in place
-     * @param rightHandSide The right-hand side vector b (length = size); modified in place
+     * @param matrix        The coefficient matrix A (size × size)
+     * @param rightHandSide The right-hand side vector b (length = size)
      * @param size          The dimension of the linear system
      * @return The solution vector x (length = size)
      * @throws IllegalArgumentException if the matrix is null, invalid, or contains non-finite values
      */
     public static float[] resolveGenericPLU(float [][] matrix, float [] rightHandSide, int size){
+        validateMatrix(matrix, size);
         validateVector(rightHandSide, size, "Right-hand side");
         validateFiniteMatrixValues(matrix, size);
         validateFiniteValues(rightHandSide, "Right-hand side");
 
-        int max = 0;
-        int maxIndex = 0;
-        for (int i = 0; i < size; i++) {
-            if (Math.abs(matrix[i][1]) > max) {
-                max = (int) Math.abs(matrix[i][1]);
-                maxIndex = i;
-            }
-        }
-        // Swap the first row with the row containing the maximum element in the first column
-        float[] tempRow = matrix[0];
-        matrix[0] = matrix[maxIndex];
-        matrix[maxIndex] = tempRow;
-        // Swap the corresponding elements in the right-hand side vector
-        float tempValue = rightHandSide[0];
-        rightHandSide[0] = rightHandSide[maxIndex];
-        rightHandSide[maxIndex] = tempValue;
+        var factors = Matrix.factorizePLU(matrix, size);
+        var P = factors.get(0);
+        var L = factors.get(1);
+        var U = factors.get(2);
 
-        var list = Matrix.factorizeLU(matrix,size);
-        var L = list.getFirst();
-        var U = list.getLast();
-
-
-        var y = resolveLowerTriangular(L, rightHandSide, size);
-
-        return resolveUpperTriangular(U,y,size);
+        var permutedRightHandSide = Matrix.matrixVectorMultiplication(P, rightHandSide, size);
+        var y = resolveLowerTriangular(L, permutedRightHandSide, size);
+        return resolveUpperTriangular(U, y, size);
 
     }
 
@@ -440,7 +424,6 @@ public class LinearSystems {
      * L&#7488;x = y   (backward substitution)
      * </pre>
      * to obtain the final solution x.
-     * </p>
      * <p>
      * The diagonal elements of L are computed as:
      * <pre>
@@ -450,7 +433,6 @@ public class LinearSystems {
      * <pre>
      * L[j][k] = (A[j][k] - sum(L[k][i] * L[j][i] for i = 0 to k-1)) / L[k][k]
      * </pre>
-     * </p>
      * <p>
      * Time complexity: O(n³) for Cholesky factorization and O(n²) for solving the systems.<br>
      * Space complexity: O(n²) for the L matrix.
