@@ -822,4 +822,43 @@ public class LinearSystemTest {
 
         assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
     }
+    @Test
+    @DisplayName("Test for solution with jacobi method with a 3x3 matrix")
+    public void testJacobiResolution() {
+        float[][] matrix = {
+                {4, 2, 1},
+                {2, 6, 2},
+                {1, 2, 5}
+        };
+        float[] rhs = {20, 18, 25};
+        int size = 3;
+        var pair = LinearSystems.resolveJacobi(matrix, rhs, size);
+        var solution = pair.getFirst();
+        var iterations = pair.getSecond();
+
+        assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
+    }
+
+    @Test
+    @DisplayName("Test for solution with Gauss-Seidel method with a 3x3 matrix")
+    public void testGaussSeidelResolution() {
+        float[][] matrix = {
+                {4, 2, 1},
+                {2, 6, 2},
+                {1, 2, 5}
+        };
+        float[] rhs = {20, 18, 25};
+        int size = 3;
+
+        var pair = LinearSystems.resolveGaussSeidel(matrix, rhs, size);
+        var solution = pair.getFirst();
+        var iterations = pair.getSecond();
+
+        assertNotNull(solution);
+        assertEquals(size, solution.length);
+        assertTrue(iterations > 0);
+        assertTrue(iterations <= 1000);
+        assertTrue(LinearSystems.checkResolution(matrix, solution, rhs, size));
+    }
+    
 }

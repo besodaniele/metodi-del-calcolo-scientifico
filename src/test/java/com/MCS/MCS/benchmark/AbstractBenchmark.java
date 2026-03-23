@@ -11,6 +11,8 @@ abstract public class AbstractBenchmark {
 
     private final static Integer MEASUREMENT_ITERATIONS = 3;
     private final static Integer WARMUP_ITERATIONS = 3;
+    private static final String JMH_REPORT_PATH = "./report/report.json";
+    private static final String ITERATIONS_PER_RUN_REPORT_PATH = "./report/iterations-per-run.csv";
 
     @Test
     public void executeJmhRunner() throws RunnerException {
@@ -26,11 +28,12 @@ abstract public class AbstractBenchmark {
                 .shouldDoGC(true)
                 .shouldFailOnError(true)
                 .resultFormat(ResultFormatType.JSON)
-                .result("./report/report.json") // set this to a valid filename if you want reports
+                .result(JMH_REPORT_PATH)
                 .shouldFailOnError(true)
                 .jvmArgs("-server")
                 .build();
 
         new Runner(opt).run();
+        BenchmarkReportPostProcessor.writeIterationsPerRunCsv(JMH_REPORT_PATH, ITERATIONS_PER_RUN_REPORT_PATH);
     }
 }

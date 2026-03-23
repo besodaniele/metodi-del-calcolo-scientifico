@@ -457,4 +457,110 @@ public class Matrix {
             throw new IllegalArgumentException("Matrix is not symmetric");
         }
     }
+    public static float infiniteNormMatrix(float [][] matrix, int size) {
+        float maxRowSum = 0.0f;
+        for (int i = 0; i < size; i++) {
+            float rowSum = 0.0f;
+            for (int j = 0; j < size; j++) {
+                rowSum += Math.abs(matrix[i][j]);
+            }
+            if (rowSum > maxRowSum) {
+                maxRowSum = rowSum;
+            }
+        }
+        return maxRowSum;
+    }
+    public static float [] vectorAddition(float [] vector1, float [] vector2, int size) {
+        float[] result = new float[size];
+        for (int i = 0; i < size; i++) {
+            result[i] = vector1[i] + vector2[i];
+        }
+        return result;
+    }
+    public static float infiniteNormVector(float [] vector, int size) {
+        float maxAbsValue = 0.0f;
+        for (int i = 0; i < size; i++) {
+            float absValue = Math.abs(vector[i]);
+            if (absValue > maxAbsValue) {
+                maxAbsValue = absValue;
+            }
+        }
+        return maxAbsValue;
+    }
+    public static float [][] inverse(float [][] matrix, int size) {
+        var plu = factorizePLU(matrix, size);
+        var P = plu.get(0);
+        var L = plu.get(1);
+        var U = plu.get(2);
+
+        float [][] inverse = new float[size][size];
+        for (int i = 0; i < size; i++) {
+            float [] e = new float[size];
+            e[i] = 1.0f;
+
+            float [] y = forwardSubstitution(L, matrixVectorMultiplication(P, e, size), size);
+            float [] x = backwardSubstitution(U, y, size);
+
+            for (int j = 0; j < size; j++) {
+                inverse[j][i] = x[j];
+            }
+        }
+        return inverse;
+    }
+
+    private static float[] backwardSubstitution(float[][] u, float[] y, int size) {
+        float[] x = new float[size];
+        for (int i = size - 1; i >= 0; i--) {
+            double sum = y[i];
+            for (int j = i + 1; j < size; j++) {
+                sum -= u[i][j] * x[j];
+            }
+            x[i] = (float) (sum / u[i][i]);
+        }
+        return x;
+    }
+
+    private static float[] forwardSubstitution(float[][] l, float[] floats, int size) {
+        float[] y = new float[size];
+        for (int i = 0; i < size; i++) {
+            double sum = floats[i];
+            for (int j = 0; j < i; j++) {
+                sum -= l[i][j] * y[j];
+            }
+            y[i] = (float) sum;
+        }
+        return y;
+    }
+
+    public static void checkDiagonalDominance(float [][] matrix, int size) throws IllegalArgumentException {
+        for (int i = 0; i < size; i++) {
+            float diagonalElement = Math.abs(matrix[i][i]);
+            float sumNonDiagonal = 0.0f;
+            for (int j = 0; j < size; j++) {
+                if (j != i) {
+                    sumNonDiagonal += Math.abs(matrix[i][j]);
+                }
+            }
+            if (diagonalElement <= sumNonDiagonal) {
+                throw new IllegalArgumentException("Matrix is not diagonally dominant at row " + i + ": diagonal element = " + diagonalElement + ", sum of non-diagonal elements = " + sumNonDiagonal);
+            }
+        }
+
+    }
+
+    public static float [][] identityMatrix(int size) {
+        float [][] identity = new float[size][size];
+        for (int i = 0; i < size; i++) {
+            identity[i][i] = 1.0f;
+        }
+        return identity;
+    }
+    public static float [] scalarMultiplicationVector(float [] vector, float scalar, int size) {
+        float[] result = new float[size];
+        for (int i = 0; i < size; i++) {
+            result[i] = vector[i] * scalar;
+        }
+        return result;
+    }
+
 }

@@ -1,0 +1,7 @@
+benchmark,run,iterations,time_us_per_op
+com.MCS.MCS.benchmark.LinearSystemIterativeBenchmarkTest.benchmarkDiagonalDominantGaussSeidel,1,8.0,6.239971838080697
+com.MCS.MCS.benchmark.LinearSystemIterativeBenchmarkTest.benchmarkDiagonalDominantGaussSeidel,2,8.0,5.846602707857336
+com.MCS.MCS.benchmark.LinearSystemIterativeBenchmarkTest.benchmarkDiagonalDominantGaussSeidel,3,8.0,5.734044422977402
+com.MCS.MCS.benchmark.LinearSystemIterativeBenchmarkTest.benchmarkDiagonalDominantJacobi,1,31.0,13.058505301134527
+com.MCS.MCS.benchmark.LinearSystemIterativeBenchmarkTest.benchmarkDiagonalDominantJacobi,2,31.0,10.775766626475201
+com.MCS.MCS.benchmark.LinearSystemIterativeBenchmarkTest.benchmarkDiagonalDominantJacobi,3,31.0,10.506499610165372

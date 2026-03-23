@@ -1,6 +1,9 @@
 package com.MCS.MCS.LinearSystems;
 
 import com.MCS.MCS.LinearAlgebra.Matrix;
+import org.apache.commons.math3.util.Pair;
+
+import java.util.List;
 
 /**
  * Utility class for solving triangular linear systems and verifying solutions.
@@ -481,5 +484,104 @@ public class LinearSystems {
         return resolveUpperTriangular(U,y,size);
 
     }
+
+    public static Pair<float [], Integer> resolveJacobi(float [][] matrix, float [] rightHandSide, int size) throws IllegalArgumentException{
+        validateMatrix(matrix, size);
+        validateVector(rightHandSide, size, "Right-hand side");
+        validateFiniteMatrixValues(matrix, size);
+        validateFiniteValues(rightHandSide, "Right-hand side");
+        validateNonZeroDiagonal(matrix, size);
+        Matrix.checkDiagonalDominance(matrix, size);
+
+        // construct P from the diagonal of the matrix
+        var list = generatePNForJacobi(matrix,size);
+        var P = list.getFirst();
+        var N = list.getLast();
+        //return result and number of iterations as a pair
+        return resolveGenericIterative(P, N,rightHandSide, size);
+
+    }
+
+    public static Pair<float [], Integer> resolveGaussSeidel(float [][] matrix, float [] rightHandSide, int size) throws IllegalArgumentException{
+        validateMatrix(matrix, size);
+        validateVector(rightHandSide, size, "Right-hand side");
+        validateFiniteMatrixValues(matrix, size);
+        validateFiniteValues(rightHandSide, "Right-hand side");
+        validateNonZeroDiagonal(matrix, size);
+        Matrix.checkDiagonalDominance(matrix, size);
+
+        // construct P and N for Gauss-Seidel
+        var list = generatePNForGaussSeidel(matrix,size);
+        var P = list.getFirst();
+        var N = list.getLast();
+
+        return resolveGenericIterative(P, N,rightHandSide, size);
+    }
+
+    //generate P and N for jacobi
+    private static List<float[][]> generatePNForJacobi(float [][] matrix, int size){
+        float [][] P = new float[size][size];
+        float [][] N = new float[size][size];
+
+        // construct P from the diagonal of the matrix
+        for (int i = 0; i < size; i++) {
+            P[i][i] = matrix[i][i];
+        }
+        // construct N from the off-diagonal elements of the matrix
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (i != j) {
+                    N[i][j] = -matrix[i][j];
+                }
+            }
+        }
+        return List.of(P,N);
+    }
+
+    //generate P and N for gauss-seidel
+    private static List<float[][]> generatePNForGaussSeidel(float [][] matrix, int size) {
+        float[][] P = new float[size][size];
+        float[][] N = new float[size][size];
+        for(int i = 0; i < size; i++) {
+            for(int j = 0; j < size; j++) {
+                if (i > j) {
+                    P[i][j] = matrix[i][j];
+                } else if (i == j) {
+                    P[i][j] = matrix[i][j];
+                } else {
+                    N[i][j] = -matrix[i][j];
+                }
+            }
+        }
+        return List.of(P,N);
+    }
+
+    //generic iterative method for jacobi and gauss-seidel
+    private static Pair<float [],Integer> resolveGenericIterative(float [][]P,float [][]N,float[] rightHandSide, int size){
+        float [] solution = new float[size];
+        float [] previousSolution;
+        float norm = Float.POSITIVE_INFINITY;
+        int numIterations = 0;
+        int limitIterations = 1000;
+        float tolerance = 1e-5f;
+        var inverseP = Matrix.inverse(P, size);
+
+        while (numIterations < limitIterations && norm > tolerance) {
+            previousSolution = solution.clone();
+
+            solution = Matrix.matrixVectorMultiplication(
+                    inverseP,
+                    Matrix.vectorAddition(
+                            Matrix.matrixVectorMultiplication(N, previousSolution, size), rightHandSide, size),
+                    size);
+
+            float stepNorm = Matrix.infiniteNormVector(Matrix.vectorSubtraction(solution, previousSolution, size), size);
+            float solutionNorm = Matrix.infiniteNormVector(solution, size);
+            norm = solutionNorm == 0f ? stepNorm : stepNorm / solutionNorm;
+            numIterations++;
+        }
+        return Pair.create(solution,numIterations);
+    }
+
 
 }
